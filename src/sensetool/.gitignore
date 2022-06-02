@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/sensetool
+sensetool.so
+sensetool.dylib
+sensetool.dll
+sensetool.a
+sensetool.lib
+sensetool-test-*
+*.exe
+*.o
+*.obj
+*.lst

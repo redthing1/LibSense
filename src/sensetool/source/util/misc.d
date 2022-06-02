@@ -1,4 +1,4 @@
-module util;
+module util.misc;
 
 string get_config_root(string app_name) {
     import std.process;

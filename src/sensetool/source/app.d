@@ -9,7 +9,9 @@ import commandr;
 import optional;
 
 import config;
-import util;
+import global;
+import util.misc;
+import util.logger;
 
 bool verbose = false;
 
@@ -29,6 +31,9 @@ void main(string[] raw_args) {
         .parse(raw_args);
 
     verbose = args.flag("verbose");
+    log = new Logger(Verbosity.info);
+    log.sinks ~= new Logger.ConsoleSink();
+    log.verbosity = verbose ? Verbosity.trace : Verbosity.info;
     
     args
         .on(CMD_INFO, (args) {
@@ -51,4 +56,14 @@ void cmd_info(ProgramArgs args) {
 }
 
 void cmd_build(ProgramArgs args) {
+    auto config = get_config();
+    if (config == none) {
+        writefln("could not get libsense config. run 'sensetool info' for more information");
+        return;
+    }
+
+    import manager;
+
+    auto mgr = new LibraryManager(config.front);
+    mgr.build_index();
 }

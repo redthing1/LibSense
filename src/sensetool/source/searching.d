@@ -1,0 +1,5 @@
+module searching;
+
+class LibrarySearcher {
+    
+}

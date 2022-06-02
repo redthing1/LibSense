@@ -6,7 +6,7 @@ import std.algorithm : map, filter, reduce;
 import std.range;
 
 import toml;
-import util;
+import util.misc;
 import optional;
 
 string get_config_file_path() {

@@ -6,6 +6,7 @@ import std.path : extension;
 import std.format;
 import std.process;
 import std.exception : enforce;
+import std.array: replace;
 
 import optional;
 
@@ -47,7 +48,8 @@ class DocumentReader {
     }
 
     Optional!string pandoc_convert(string file_path, string from_format, string to_format) {
-        auto command = format("pandoc -i '%s' -f %s -t %s", file_path, from_format, to_format);
+        auto escaped_file_path = escape_file_path(file_path);
+        auto command = format("pandoc -i '%s' -f %s -t %s", escaped_file_path, from_format, to_format);
         auto pandoc = executeShell(command);
 
         if (pandoc.status != 0) {
@@ -59,7 +61,8 @@ class DocumentReader {
     }
 
     Optional!string pdftotext_convert(string file_path) {
-        auto command = format("pdftotext -layout '%s' -", file_path);
+        auto escaped_file_path = escape_file_path(file_path);
+        auto command = format("pdftotext -layout '%s' -", escaped_file_path);
         auto pdftotext = executeShell(command);
 
         if (pdftotext.status != 0) {
@@ -68,5 +71,9 @@ class DocumentReader {
         }
 
         return some(pdftotext.output);
+    }
+
+    private string escape_file_path(string file_path) {
+        return file_path.replace(r"'", r"'\''");
     }
 }

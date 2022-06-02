@@ -13,9 +13,12 @@ from loguru import logger
 from doccrunch import __version__
 
 from aitg.gens.embed_generator import EmbedGenerator
+from aitg.gens.bart_summary_generator import BartSummaryGenerator
 
-AI_INSTANCE = None
-GENERATOR = None
+AI_EMBED_INSTANCE = None
+EMBED_GENERATOR = None
+AI_SUMMARIZER_INSTANCE = None
+SUMMARY_GENERATOR = None
 
 
 def req_as_dict(req):
@@ -114,10 +117,10 @@ def gen_bart_classifier_route(ext):
     try:
         start = time.time()
 
-        global AI_INSTANCE, GENERATOR
+        global AI_EMBED_INSTANCE, EMBED_GENERATOR
 
         # standard generate
-        output = GENERATOR.generate(
+        output = EMBED_GENERATOR.generate(
             texts=opt_texts,
         )
 
@@ -135,20 +138,23 @@ def gen_bart_classifier_route(ext):
             "num_embeds": num_embeds,
             "embeds": embeds,
             "gen_time": generation_time,
-            "model": AI_INSTANCE.model_name,
+            "model": AI_EMBED_INSTANCE.model_name,
         }
 
         return pack_bundle(resp_bundle, ext)
     except Exception as ex:
         logger.error(f"error generating: {traceback.format_exc()}")
-        abort(400, f"generation failed")
+        abort(400, f"generation fembed_ailed")
 
 
-def run_server(ai, host: str, port: int, debug: bool):
-    global AI_INSTANCE, GENERATOR
+def run_server(embed_ai, summarizer_ai, host: str, port: int, debug: bool):
+    global AI_EMBED_INSTANCE, EMBED_GENERATOR, AI_SUMMARIZER_INSTANCE, SUMMARY_GENERATOR
 
-    AI_INSTANCE = ai
-    GENERATOR = EmbedGenerator(ai)
+    AI_EMBED_INSTANCE = embed_ai
+    EMBED_GENERATOR = EmbedGenerator(embed_ai)
+
+    AI_SUMMARIZER_INSTANCE = summarizer_ai
+    SUMMARY_GENERATOR = BartSummaryGenerator(summarizer_ai)
 
     logger.info(f"starting server on {host}:{port}")
     run(host=host, port=port, debug=debug)

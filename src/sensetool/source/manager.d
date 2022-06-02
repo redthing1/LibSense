@@ -5,7 +5,8 @@ import std.format;
 
 import global;
 import config;
-import embedding;
+import models;
+import docprocess;
 import indexing;
 import searching;
 import docread;
@@ -28,7 +29,7 @@ class LibraryManager {
         log.info("building library index...");
 
         // first, get a list of all dpcuments in all the library paths
-        Document[] doc_files;
+        FoundDocument[] doc_files;
         foreach (lib_path; config.library_paths) {
             log.info(format("scanning library path: %s", lib_path));
             foreach (string entry; dirEntries(expandTilde(lib_path), SpanMode.breadth)) {
@@ -38,17 +39,22 @@ class LibraryManager {
                 log.trace(format(" found document: %s", entry));
                 auto doc_key = get_doc_key_from_filename(entry);
                 auto doc_file_path = entry;
-                doc_files ~= Document(doc_key, doc_file_path);
+                doc_files ~= FoundDocument(doc_key, doc_file_path);
             }
         }
 
         auto doc_reader = new DocumentReader();
+        auto doc_processor = new DocumentProcessor(config.server_endpoint);
         foreach (doc; doc_files) {
             log.trace(format("reading document: %s", doc));
-            auto doc_result = doc_reader.read_document(doc.file_name);
-            if (doc_result == none) {
+            auto doc_raw_contents = doc_reader.read_document(doc.file_name);
+            if (doc_raw_contents == none) {
                 log.err(format("failed to read document: %s", doc));
             }
+
+            // we have the raw contents of the document, now we need to process it
+            doc.raw_contents = doc_raw_contents.front;
+            auto processed_document = doc_processor.process_document(doc);
         }
     }
 

@@ -1,5 +1,0 @@
-module embedding;
-
-class EmbeddingProvider {
-    
-}

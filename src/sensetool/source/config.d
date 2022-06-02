@@ -33,6 +33,7 @@ Optional!TOMLDocument parse_config_file() {
 
 struct LibSenseConfig {
     string[] library_paths;
+    string server_endpoint;
 
     string toString() {
         import std.array;
@@ -40,7 +41,8 @@ struct LibSenseConfig {
 
         auto sb = appender!string;
 
-        sb ~= format("library_paths: %s", library_paths);
+        sb ~= format("library_paths: %s\n", library_paths);
+        sb ~= format("server_endpoint: %s\n", server_endpoint);
 
         return sb.array;
     }
@@ -52,6 +54,7 @@ Optional!LibSenseConfig get_config() {
         return no!LibSenseConfig;
     }
     auto lib_paths = doc.front["library_paths"].array.map!(x => x.str).array;
+    auto server_endpoint = doc.front["server_endpoint"].str;
 
-    return some(LibSenseConfig(lib_paths));
+    return some(LibSenseConfig(lib_paths, server_endpoint));
 }

@@ -1,0 +1,5 @@
+module manager;
+
+class LibraryManager {
+
+}

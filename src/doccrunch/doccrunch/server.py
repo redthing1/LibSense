@@ -66,7 +66,7 @@ def info_route(ext):
     return pack_bundle(bundle, ext)
 
 
-@route("/clean_document.<ext>", method=["GET"])
+@route("/clean_document.<ext>", method=["GET", "POST"])
 def clean_document_route(ext):
     req_json = req_as_dict(request)
 

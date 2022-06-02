@@ -3,6 +3,7 @@ import os
 import traceback
 import json
 import msgpack
+from typing import List
 
 import lz4.frame
 from bottle import run, route, request, response, abort
@@ -73,7 +74,9 @@ def clean_document_route(ext):
 
     opt_max_sentence_length: bool = get_req_opt(req_json, "max_sentence_length", 2000)
     opt_contents: str = get_req_opt(req_json, "contents", "")
-    opt_discard_nonparagraph_sentences: bool = get_req_opt(req_json, "discard_nonpara", False)
+    opt_discard_nonparagraph_sentences: bool = get_req_opt(
+        req_json, "discard_nonpara", False
+    )
 
     cleaned_doc = clean_document_for_indexing(
         contents=opt_contents,
@@ -91,6 +94,54 @@ def clean_document_route(ext):
         bundle["nonparagraph_sentences"] = cleaned_doc.nonparagraph_sentences
 
     return pack_bundle(bundle, ext)
+
+
+@route("/gen_sentence_embed.<ext>", method=["GET", "POST"])
+def gen_bart_classifier_route(ext):
+    req_json = req_as_dict(request)
+    try:
+        _ = req_json["texts"]
+    except KeyError as ke:
+        abort(400, f"missing field {ke}")
+
+    # mode params
+    # option params
+    opt_texts: List[str] = get_req_opt(req_json, "texts", None)
+
+    logger.debug(f"requesting sentence embeds for texts: {opt_texts}")
+
+    # generate
+    try:
+        start = time.time()
+
+        global AI_INSTANCE, GENERATOR
+
+        # standard generate
+        output = GENERATOR.generate(
+            texts=opt_texts,
+        )
+
+        embeds = output.embeddings
+        num_embeds = len(embeds)
+        logger.debug(f"model output: embeds[{len(embeds)}]")
+        generation_time = time.time() - start
+        gen_vecps = num_embeds / generation_time
+        logger.info(
+            f"generated [{num_embeds} vec] ({generation_time:.2f}s/{gen_vecps:.2f} vps)"
+        )
+
+        resp_bundle = {
+            "similarity": output.similarity,
+            "num_embeds": num_embeds,
+            "embeds": embeds,
+            "gen_time": generation_time,
+            "model": AI_INSTANCE.model_name,
+        }
+
+        return pack_bundle(resp_bundle, ext)
+    except Exception as ex:
+        logger.error(f"error generating: {traceback.format_exc()}")
+        abort(400, f"generation failed")
 
 
 def run_server(ai, host: str, port: int, debug: bool):

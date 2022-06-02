@@ -81,10 +81,20 @@ def clean_document_route(ext):
         req_json, "discard_nonpara", False
     )
 
+    logger.debug(f"requesting clean document for document of length {len(opt_contents)}")
+
+    start = time.time()
+    
     cleaned_doc = clean_document_for_indexing(
         contents=opt_contents,
         max_sentence_length=opt_max_sentence_length,
         discard_nonparagraph_sentences=opt_discard_nonparagraph_sentences,
+    )
+
+    generation_time = time.time() - start
+    gen_sentps = cleaned_doc.num_sents / generation_time
+    logger.info(
+        f"cleaned document: [{cleaned_doc.num_initial_sents} -> {cleaned_doc.num_sents} sent] ({generation_time:.2f}s/{gen_sentps:.2f} sps)"
     )
 
     bundle = {
@@ -229,6 +239,10 @@ def run_server(embed_ai, summarizer_ai, host: str, port: int, debug: bool):
 
     AI_SUMMARIZER_INSTANCE = summarizer_ai
     SUMMARY_GENERATOR = BartSummaryGenerator(summarizer_ai)
+
+    # configure server
+    import bottle
+    bottle.BaseRequest.MEMFILE_MAX = 256 * 1024 * 1024  # 256MB max upload size
 
     logger.info(f"starting server on {host}:{port}")
     run(host=host, port=port, debug=debug)

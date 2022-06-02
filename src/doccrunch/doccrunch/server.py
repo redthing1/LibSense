@@ -75,7 +75,7 @@ def clean_document_route(ext):
     except KeyError as ke:
         abort(400, f"missing field {ke}")
 
-    opt_max_sentence_length: bool = get_req_opt(req_json, "max_sentence_length", 2000)
+    opt_max_sentence_length: int = get_req_opt(req_json, "max_sentence_length", 2000)
     opt_contents: str = get_req_opt(req_json, "contents", "")
     opt_discard_nonparagraph_sentences: bool = get_req_opt(
         req_json, "discard_nonpara", False

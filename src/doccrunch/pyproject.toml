@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "doccrunch"
+version = "0.1.0"
+description = ""
+authors = ["redthing1 <redthing1@alt.icu>"]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.11"
+aitg-doctools = "^0.2.0"
+aitg = "^3.4.0"
+en_core_web_sm = {url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.1.0/en_core_web_sm-3.1.0.tar.gz#egg=en_core_web_sm"}
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

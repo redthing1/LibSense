@@ -5,7 +5,8 @@ import std.format;
 import std.datetime;
 import std.algorithm : fold;
 import std.array;
-import std.numeric : normalize, normalize_vec = normalize;
+import mir.ndslice;
+import mir.blas;
 
 import optional;
 
@@ -125,10 +126,14 @@ class DocumentProcessor {
                 log.trace(format("embedded %s chunk #%d",
                         input_doc.key, i));
                 for (auto j = 0; j < embed_data.embeds.length; j++) {
-                    auto vec = embed_data.embeds[j];
+                    auto vec = embed_data.embeds[j].sliced;
+                    // writefln("vec: %s", vec);
                     // normalize the vector so we can use L2 for cosine similarity
-                    normalize_vec(vec); // in-place normalization
-                    embeds ~= vec;
+                    // auto nrm_vec = vec / vec.nrm2();
+                    vec[] = vec / vec.nrm2();
+                    // writefln("nrm_vec: %s", nrm_vec);
+                    auto nrm_vec_d = vec.field;
+                    embeds ~= nrm_vec_d;
                 }
             }
             return true;

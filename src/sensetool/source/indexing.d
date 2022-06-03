@@ -159,13 +159,18 @@ class LibraryIndexer {
             id_summ_count++;
         }
 
+        log.trace(format(
+                "added to library index: %s, id_sents_start: %s, "
+                ~ "id_sents_count: %s, id_summ_start: %s, id_summ_count: %s",
+                doc.key, id_sents_start, id_sents_count, id_summ_start, id_summ_count));
+
         auto lib_doc = LibraryIndex.Document(
             doc.key,
             id_sents_start, id_sents_count, id_summ_start, id_summ_count,
             doc.sentences, doc.summaries);
         lib_index.documents[doc.key] = lib_doc;
 
-        log.info(format("faiss stats: %s", faiss_Index_ntotal(sem_index)));
+        log.trace(format("faiss stats: %s", faiss_Index_ntotal(sem_index)));
     }
 
     public SearchResult[] search(TEmbedding query_vec, int k = 10) {

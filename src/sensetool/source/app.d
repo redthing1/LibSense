@@ -100,4 +100,8 @@ void cmd_search(ProgramArgs args) {
     auto query = args.arg("query");
     auto searcher = new LibrarySearcher(config, indexer);
     auto results = searcher.search(query);
+
+    foreach (result; results) {
+        writefln("result: %s", result);
+    }
 }

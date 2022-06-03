@@ -31,6 +31,6 @@ class LibrarySearcher {
         // search the index
         auto results = indexer.search(query_vec);
 
-        return [SearchResult()];
+        return results;
     }
 }

@@ -57,4 +57,17 @@ struct EmbedResp {
 }
 
 struct SearchResult {
+    string document_key;
+    string match_text;
+
+    Type match_type;
+
+    float vec_distance;
+    long vec_label;
+
+    enum Type {
+        Unknown,
+        Sentence,
+        Summary,
+    }
 }

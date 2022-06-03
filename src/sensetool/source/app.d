@@ -56,7 +56,7 @@ void cmd_info(ProgramArgs args) {
     auto config = maybe_config.front;
     // writefln("libsense config:\n%s", config.front);
 
-    auto indexer = new LibraryIndexer(config.index_path, config.vector_dim);
+    auto indexer = new LibraryIndexer(config);
     indexer.load();
 
     writefln("library stats:");

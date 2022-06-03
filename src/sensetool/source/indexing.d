@@ -14,6 +14,7 @@ import faiss.index_factory;
 import faiss.index_io;
 
 import global;
+import config;
 import models;
 import util.misc;
 
@@ -32,6 +33,7 @@ struct LibraryIndex {
 }
 
 class LibraryIndexer {
+    LibSenseConfig config;
     string base_path;
     int vector_dim;
     LibraryIndex lib_index;
@@ -40,9 +42,10 @@ class LibraryIndexer {
     enum LIB_INDEX_FILE = "documents.idx";
     enum SEM_VECTOR_FILE = "sem_data.vec";
 
-    this(string base_path, int vector_dim) {
-        this.base_path = expandTilde(base_path);
-        this.vector_dim = vector_dim;
+    this(LibSenseConfig config) {
+        this.config = config;
+        this.base_path = expandTilde(config.index_path);
+        this.vector_dim = config.vector_dim;
     }
 
     ~this() {

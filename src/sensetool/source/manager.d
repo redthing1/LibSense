@@ -24,7 +24,7 @@ class LibraryManager {
         import std.file : dirEntries, SpanMode, isFile;
         import std.path : expandTilde;
 
-        auto indexer = new LibraryIndexer(config.index_path, config.vector_dim);
+        auto indexer = new LibraryIndexer(config);
         indexer.load();
 
         log.info("building library index...");

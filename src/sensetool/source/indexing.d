@@ -70,8 +70,8 @@ class LibraryIndexer {
             // load the vector data
             faiss_read_index_fname(sem_vector_path.c_str(), 0, &sem_index);
         }
-        log.trace(format("prepared faiss index for semantic vectors, trained: %s", faiss_Index_is_trained(
-                sem_index)));
+        log.trace(format("prepared faiss index for semantic vectors, dim: %s trained: %s",
+                vector_dim, faiss_Index_is_trained(sem_index)));
     }
 
     public void save() {
@@ -90,10 +90,32 @@ class LibraryIndexer {
     }
 
     public void add_document(ProcessedDocument doc) {
-        log.info(format("adding to library lib_index: %s", doc.key));
         // add document to lib_index
-        foreach (vec; doc.sentence_embeddings) {
-            faiss_Index_add(sem_index, 1, vec.ptr);
+        log.info(format("adding to library index: %s", doc.key));
+
+        // sentence embeddings
+        import core.stdc.stdlib : malloc;
+        import core.stdc.string : memcpy;
+
+        // auto doc_sent_vecs = cast(float*) malloc(
+        //     vector_dim * float.sizeof * doc.sentence_embeddings.length);
+        // for (auto i = 0; i < doc.sentence_embeddings.length; i++) {
+        //     auto vec = doc.sentence_embeddings[i];
+        //     memcpy(doc_sent_vecs, vec.ptr, vector_dim * float.sizeof);
+        // }
+        // faiss_Index_add(sem_index, doc.sentence_embeddings.length, doc_sent_vecs);
+
+
+        foreach (i, vec; doc.sentence_embeddings) {
+            auto vec_ptr = vec.ptr;
+            faiss_Index_add(sem_index, 1, cast(float*) vec);
+        }
+        writefln("faiss stats: %s", faiss_Index_ntotal(sem_index));
+    }
+
+    ~this() {
+        if (sem_index) {
+            faiss_Index_free(sem_index);
         }
     }
 }

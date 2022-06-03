@@ -62,5 +62,5 @@ Optional!LibSenseConfig get_config() {
     auto index_path = doc.front["index_path"].str;
     auto vector_dim = doc.front["vector_dim"].integer;
 
-    return some(LibSenseConfig(lib_paths, server_endpoint, index_path));
+    return some(LibSenseConfig(lib_paths, server_endpoint, index_path, cast(int) vector_dim));
 }

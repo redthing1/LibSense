@@ -3,6 +3,7 @@ import std.format;
 import std.file;
 import std.path;
 import std.array;
+import std.conv;
 import std.exception : enforce;
 
 import commandr;
@@ -35,6 +36,7 @@ void main(string[] raw_args) {
 		)
         .add(new Command(CMD_SEARCH, "search library")
             .add(new Argument("query", "query to search for"))
+            .add(new Option("k", "k", "number of results to return").defaultValue("10"))
         )
         .add(new Command(CMD_LIST, "list library")
             .add(new Argument("filter", "filter to apply"))
@@ -112,8 +114,9 @@ void cmd_search(ProgramArgs args) {
     indexer.load();
 
     auto query = args.arg("query");
+    auto k = args.option("k").to!int();
     auto searcher = new LibrarySearcher(config, indexer);
-    auto results = searcher.search(query);
+    auto results = searcher.search(query, k);
 
     foreach (result; results) {
         writefln("result: %s", result);

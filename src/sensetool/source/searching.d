@@ -17,7 +17,7 @@ class LibrarySearcher {
         this.indexer = indexer;
     }
 
-    public SearchResult[] search(string query) {
+    public SearchResult[] search(string query, int k) {
         auto embedder = SentenceEmbed(config.server_endpoint);
 
         // embed the query
@@ -29,7 +29,7 @@ class LibrarySearcher {
         auto query_vec = query_vecs[0];
 
         // search the index
-        auto results = indexer.search(query_vec);
+        auto results = indexer.search(query_vec, k);
 
         return results;
     }

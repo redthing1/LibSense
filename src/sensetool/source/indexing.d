@@ -15,6 +15,7 @@ import faiss.index_io;
 
 import global;
 import models;
+import util.misc;
 
 struct LibraryIndex {
 
@@ -67,7 +68,7 @@ class LibraryIndexer {
         }
         if (exists(sem_vector_path)) {
             // load the vector data
-            faiss_read_index_fname(cast(char*) sem_vector_path, 0, &sem_index);
+            faiss_read_index_fname(sem_vector_path.c_str(), 0, &sem_index);
         }
         log.trace(format("prepared faiss index for semantic vectors, trained: %s", faiss_Index_is_trained(
                 sem_index)));
@@ -85,11 +86,14 @@ class LibraryIndexer {
         // save the semantic vector data
         auto sem_vector_path = buildPath(base_path, SEM_VECTOR_FILE);
         log.info(format("saving semantic vector data to %s", sem_vector_path));
-        faiss_write_index_fname(sem_index, cast(char*) sem_vector_path);
+        faiss_write_index_fname(sem_index, sem_vector_path.c_str());
     }
 
     public void add_document(ProcessedDocument doc) {
         log.info(format("adding to library lib_index: %s", doc.key));
-        // TODO: add document to lib_index
+        // add document to lib_index
+        foreach (vec; doc.sentence_embeddings) {
+            faiss_Index_add(sem_index, 1, vec.ptr);
+        }
     }
 }

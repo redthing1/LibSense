@@ -47,6 +47,8 @@ class DocumentProcessor {
             return no!ProcessedDocument;
         }
         auto clean_data = clean_resp.front;
+        log.info(format("cleaned document: %s: %d -> %d",
+            input_doc.key, clean_data.num_initial_sents, clean_data.num_sents));
 
         auto document_sents = clean_data.sents;
 

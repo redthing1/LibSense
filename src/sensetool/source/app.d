@@ -132,6 +132,11 @@ void cmd_list(ProgramArgs args) {
     auto filter = args.arg("filter");
     auto docs = indexer.filter_documents(filter);
 
+    if (docs.empty) {
+        writefln("no results found.");
+        return;
+    }
+
     writeln("documents:");
     foreach (doc; docs) {
         writefln("⌙ %s", doc.key);

@@ -91,7 +91,7 @@ class LibraryIndexer {
         auto sem_vector_path = buildPath(base_path, SEM_VECTOR_FILE);
         // https://github.com/facebookresearch/faiss/issues/593 - for cosine similarity, pre-normalize vectors and just use L2
         // use the IndexFlatL2 for now
-        if (faiss_index_factory(&sem_index, vector_dim, "Flat", FaissMetricType.METRIC_L2)) {
+        if (faiss_index_factory(&sem_index, vector_dim, "Flat", FaissMetricType.METRIC_INNER_PRODUCT)) {
             // failed to create FAISS index
             log.err(format("failed to create FAISS index for semantic vectors"));
             enforce(0, format("failed to create FAISS index for semantic vectors"));

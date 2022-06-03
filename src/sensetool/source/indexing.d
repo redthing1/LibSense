@@ -36,6 +36,7 @@ struct LibraryIndex {
     }
 
     Document[string] documents;
+    long vec_id_counter = 0;
 }
 
 class LibraryIndexer {
@@ -135,25 +136,29 @@ class LibraryIndexer {
         // lib_index.vec_id_sents_counter += xid_count_sent;
         // lib_index.vec_id_summ_counter += xid_summ_count;
 
-        auto id_sents_start = -1;
-        auto id_sents_count = 0;
+        long id_sents_start = -1;
+        long id_sents_count = 0;
 
         // sentence embeddings
         foreach (i, vec; doc.sentence_embeddings) {
             // idx_t[1] xid = [xid_count_sent + i];
             // faiss_Index_add_with_ids(sem_index, 1, cast(float*) vec, cast(idx_t*) xid);
-            auto id = faiss_Index_add(sem_index, 1, cast(float*) vec);
+            auto res = faiss_Index_add(sem_index, 1, cast(float*) vec);
+            enforce(res == 0, "failed to add sentence vector to faiss index");
+            auto id = lib_index.vec_id_counter++;
             if (i == 0)
                 id_sents_start = id;
             id_sents_count++;
         }
 
-        auto id_summ_start = -1;
-        auto id_summ_count = 0;
+        long id_summ_start = -1;
+        long id_summ_count = 0;
 
         // summary embeddings
         foreach (i, vec; doc.summary_embeddings) {
-            auto id = faiss_Index_add(sem_index, 1, cast(float*) vec);
+            auto res = faiss_Index_add(sem_index, 1, cast(float*) vec);
+            enforce(res == 0, "failed to add summary vector to faiss index");
+            auto id = lib_index.vec_id_counter++;
             if (i == 0)
                 id_summ_start = id;
             id_summ_count++;

@@ -75,7 +75,7 @@ struct SearchResult {
         // dfmt off
         switch (match_type) {
             case Type.Unknown: return "unk";
-            case Type.Sentence: return "sent";
+            case Type.Sentence: return "snt";
             case Type.Summary: return "sum";
             default: assert(0);
         }

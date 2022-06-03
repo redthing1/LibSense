@@ -47,6 +47,12 @@ class LibraryManager {
         auto doc_reader = new DocumentReader();
         auto doc_processor = new DocumentProcessor(config.server_endpoint);
         foreach (doc; doc_files) {
+            // check if we already know about this document
+            if (indexer.has_document(doc.key)) {
+                log.trace(format("skipping document %s, already indexed", doc.key));
+                continue;
+            }
+
             log.trace(format("reading document: %s", doc));
             auto doc_raw_contents = doc_reader.read_document(doc.file_name);
             if (doc_raw_contents == none) {

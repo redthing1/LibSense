@@ -45,6 +45,12 @@ class LibraryIndexer {
         this.vector_dim = vector_dim;
     }
 
+    ~this() {
+        if (sem_index) {
+            faiss_Index_free(sem_index);
+        }
+    }
+
     public void load() {
         // check if base_path exists and create it if not
         if (!exists(base_path)) {
@@ -120,7 +126,8 @@ class LibraryIndexer {
             // idx_t[1] xid = [xid_count_sent + i];
             // faiss_Index_add_with_ids(sem_index, 1, cast(float*) vec, cast(idx_t*) xid);
             auto id = faiss_Index_add(sem_index, 1, cast(float*) vec);
-            if (i == 0) id_start_sents = id;
+            if (i == 0)
+                id_start_sents = id;
             id_count_sents++;
         }
 
@@ -130,7 +137,8 @@ class LibraryIndexer {
         // summary embeddings
         foreach (i, vec; doc.summary_embeddings) {
             auto id = faiss_Index_add(sem_index, 1, cast(float*) vec);
-            if (i == 0) id_start_summ = id;
+            if (i == 0)
+                id_start_summ = id;
             id_count_summ++;
         }
 
@@ -140,9 +148,7 @@ class LibraryIndexer {
         log.info(format("faiss stats: %s", faiss_Index_ntotal(sem_index)));
     }
 
-    ~this() {
-        if (sem_index) {
-            faiss_Index_free(sem_index);
-        }
+    bool has_document(string doc_key) {
+        return (doc_key in lib_index.documents) != null;
     }
 }

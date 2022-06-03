@@ -21,7 +21,7 @@ class LibraryIndexer {
     enum LIB_INDEX_FILE = "documents.idx";
 
     this(string base_path) {
-        this.base_path = base_path;
+        this.base_path = expandTilde(base_path);
     }
 
     public void load() {

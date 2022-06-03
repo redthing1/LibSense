@@ -213,6 +213,26 @@ class LibraryIndexer {
         return results.data;
     }
 
+    public LibraryIndex.Document[] filter_documents(string filter) {
+        import std.regex;
+
+        auto filter_re = regex(filter);
+        auto docs = appender!(LibraryIndex.Document[]);
+
+        foreach (doc; lib_index.documents.byValue()) {
+            // check if doc key matches the filter
+            if (!doc.key.matchFirst(filter_re).empty) {
+                docs ~= doc;
+            }
+        }
+
+        return docs.data;
+    }
+
+    public LibraryIndex.Document get_document(string key) {
+        return lib_index.documents[key];
+    }
+
     @property long num_sem_index_entries() {
         if (sem_index) {
             return faiss_Index_ntotal(sem_index);

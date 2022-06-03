@@ -22,6 +22,8 @@ void main(string[] raw_args) {
 	enum CMD_INFO = "info";
 	enum CMD_BUILD = "build";
 	enum CMD_SEARCH = "search";
+    enum CMD_LIST = "list";
+    enum CMD_DUMP = "dump";
     auto args = new Program("sensetool", "v. 0.1").summary("libsense multitool")
         .author("no")
         .add(new Flag("v", "verbose", "turns on more verbose output"))
@@ -33,6 +35,12 @@ void main(string[] raw_args) {
 		)
         .add(new Command(CMD_SEARCH, "search library")
             .add(new Argument("query", "query to search for"))
+        )
+        .add(new Command(CMD_LIST, "list library")
+            .add(new Argument("filter", "filter to apply"))
+        )
+        .add(new Command(CMD_DUMP, "dump document")
+            .add(new Argument("key", "key of document to dump"))
         )
         .parse(raw_args);
 
@@ -50,6 +58,12 @@ void main(string[] raw_args) {
         })
         .on(CMD_SEARCH, (args) {
             cmd_search(args);
+        })
+        .on(CMD_LIST, (args) {
+            cmd_list(args);
+        })
+        .on(CMD_DUMP, (args) {
+            cmd_dump(args);
         })
         ;
      // dfmt on
@@ -104,4 +118,36 @@ void cmd_search(ProgramArgs args) {
     foreach (result; results) {
         writefln("result: %s", result);
     }
+}
+
+void cmd_list(ProgramArgs args) {
+    auto maybe_config = get_config();
+    if (maybe_config == none)
+        error_no_config();
+    auto config = maybe_config.front;
+
+    auto indexer = new LibraryIndexer(config);
+    indexer.load();
+
+    auto filter = args.arg("filter");
+    auto docs = indexer.filter_documents(filter);
+
+    writeln("documents:");
+    foreach (doc; docs) {
+        writefln("⌙ %s", doc.key);
+    }
+}
+
+auto cmd_dump(ProgramArgs args) {
+    auto maybe_config = get_config();
+    if (maybe_config == none)
+        error_no_config();
+    auto config = maybe_config.front;
+
+    auto indexer = new LibraryIndexer(config);
+    indexer.load();
+
+    auto key = args.arg("key");
+    auto doc = indexer.get_document(key);
+    writefln("%s", doc);
 }

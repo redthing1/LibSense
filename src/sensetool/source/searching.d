@@ -3,6 +3,7 @@ module searching;
 import global;
 import config;
 import indexing;
+import embed;
 
 struct SearchResult {
 }
@@ -17,6 +18,12 @@ class LibrarySearcher {
     }
 
     public SearchResult[] search(string query) {
+        auto embedder = SentenceEmbed(config.server_endpoint);
+
+        // embed the query
+        auto query_vecs = embedder.embed([query]);
+        auto query_vec = query_vecs[0];
+
         return [SearchResult()];
     }
 }

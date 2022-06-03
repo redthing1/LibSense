@@ -14,6 +14,7 @@ import global;
 import models;
 import util.minhttp;
 import util.chunker;
+import embed;
 
 class DocumentProcessor {
     string backend_url;
@@ -84,29 +85,18 @@ class DocumentProcessor {
         enum EMBED_BATCH_SIZE = 64;
         auto sent_embed_chunks = document_sents.chunk!string(x => x.length >= EMBED_BATCH_SIZE);
         auto summary_embed_chunks = summaries.chunk!string(x => x.length >= EMBED_BATCH_SIZE);
+        auto embedder = SentenceEmbed(backend_url);
 
         bool accumulate_embed_chunks(ref Appender!(TEmbedding[]) embeds, ref string[][] chunks) {
             foreach (i, chunk; chunks) {
-                auto embed_req = EmbedReq(chunk);
-                auto embed_resp = client.post!(EmbedReq, EmbedResp)(
-                    backend_url ~ "/gen_sentence_embed.json", embed_req);
-                if (embed_resp == none) {
+                auto maybe_embed_data = embedder.embed(chunk);
+                if (maybe_embed_data == none) {
                     log.err(format("failed to embed document: %s", input_doc.key));
                     return false;
                 }
-                auto embed_data = embed_resp.front;
-                log.trace(format("embedded %s chunk #%d",
-                        input_doc.key, i));
-                for (auto j = 0; j < embed_data.embeds.length; j++) {
-                    auto vec = embed_data.embeds[j].sliced;
-                    // writefln("vec: %s", vec);
-                    // normalize the vector so we can use L2 for cosine similarity
-                    // auto nrm_vec = vec / vec.nrm2();
-                    vec[] = vec / vec.nrm2();
-                    // writefln("nrm_vec: %s", nrm_vec);
-                    auto nrm_vec_d = vec.field;
-                    embeds ~= nrm_vec_d;
-                }
+                auto embed_data = maybe_embed_data.front;
+                log.trace(format("embedded %s chunk #%d", input_doc.key, i));
+                embeds ~= embed_data;
             }
             return true;
         }

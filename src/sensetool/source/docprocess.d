@@ -5,6 +5,7 @@ import std.format;
 import std.datetime;
 import std.algorithm : fold;
 import std.array;
+import std.numeric : normalize, normalize_vec = normalize;
 
 import optional;
 
@@ -123,7 +124,12 @@ class DocumentProcessor {
                 auto embed_data = embed_resp.front;
                 log.trace(format("embedded %s chunk #%d",
                         input_doc.key, i));
-                embeds ~= embed_data.embeds;
+                for (auto j = 0; j < embed_data.embeds.length; j++) {
+                    auto vec = embed_data.embeds[j];
+                    // normalize the vector so we can use L2 for cosine similarity
+                    normalize_vec(vec); // in-place normalization
+                    embeds ~= vec;
+                }
             }
             return true;
         }

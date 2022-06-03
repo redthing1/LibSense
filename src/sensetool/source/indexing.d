@@ -7,6 +7,11 @@ import std.path;
 import mir.ser.msgpack : serializeMsgpack;
 import mir.deser.msgpack : deserializeMsgpack;
 
+import faiss;
+import faiss.index;
+import faiss.index_factory;
+import faiss.index_io;
+
 import global;
 import models;
 
@@ -16,12 +21,15 @@ struct LibraryIndex {
 
 class LibraryIndexer {
     string base_path;
-    LibraryIndex index;
+    int vector_dim;
+    LibraryIndex lib_index;
 
     enum LIB_INDEX_FILE = "documents.idx";
+    enum SEM_VECTOR_FILE = "sem_data.vec";
 
-    this(string base_path) {
+    this(string base_path, int vector_dim) {
         this.base_path = expandTilde(base_path);
+        this.vector_dim = vector_dim;
     }
 
     public void load() {
@@ -30,30 +38,48 @@ class LibraryIndexer {
             mkdirRecurse(base_path);
         }
 
-        log.info(format("loading library index data from %s", base_path));
+        log.info(format("loading library lib_index data from %s", base_path));
 
-        // load the index files
+        // load the lib_index files
+
+        // 1. library lib_index
         auto lib_index_path = buildPath(base_path, LIB_INDEX_FILE);
         if (exists(lib_index_path)) {
-            // load the index
+            // load the lib_index
             auto file_data = cast(ubyte[]) std.file.read(lib_index_path);
-            index = file_data.deserializeMsgpack!LibraryIndex();
+            lib_index = file_data.deserializeMsgpack!LibraryIndex();
         } else {
-            // create the index
-            log.warn(format("existing library index not found, creating new one in %s", lib_index_path));
-            index = LibraryIndex();
+            // create the lib_index
+            log.warn(format("existing library lib_index not found, creating new one in %s", lib_index_path));
+            lib_index = LibraryIndex();
+        }
+
+        // 2. semantic vector data
+        auto sem_vector_path = buildPath(base_path, SEM_VECTOR_FILE);
+        FaissIndex* sem_index = null;
+        // https://github.com/facebookresearch/faiss/issues/593 - for cosine similarity, pre-normalize vectors and just use L2
+        if (faiss_index_factory(&sem_index, vector_dim, "Flat", FaissMetricType.METRIC_L2)) {
+            // fail
+            
+        }
+        if (exists(sem_vector_path)) {
+            // load the lib_index
+        } else {
+            // create the lib_index
+
         }
     }
 
-    public void add_document(ProcessedDocument doc) {
-        log.info(format("adding to library index: %s", doc.key));
-        // TODO: add document to index
+    public void save() {
+        log.info(format("saving library lib_index data to %s", base_path));
+        auto lib_index_path = buildPath(base_path, LIB_INDEX_FILE);
+        auto lib_index_data = lib_index.serializeMsgpack();
+        std.file.write(lib_index_path, lib_index_data);
     }
 
-    public void save() {
-        log.info(format("saving library index data to %s", base_path));
-        auto lib_index_path = buildPath(base_path, LIB_INDEX_FILE);
-        auto lib_index_data = index.serializeMsgpack();
-        std.file.write(lib_index_path, lib_index_data);
+    // IndexFlatL2
+    public void add_document(ProcessedDocument doc) {
+        log.info(format("adding to library lib_index: %s", doc.key));
+        // TODO: add document to lib_index
     }
 }

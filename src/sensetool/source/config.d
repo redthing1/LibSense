@@ -35,6 +35,7 @@ struct LibSenseConfig {
     string[] library_paths;
     string server_endpoint;
     string index_path;
+    int vector_dim;
 
     string toString() {
         import std.array;
@@ -45,6 +46,7 @@ struct LibSenseConfig {
         sb ~= format("library_paths: %s\n", library_paths);
         sb ~= format("server_endpoint: %s\n", server_endpoint);
         sb ~= format("index_path: %s\n", index_path);
+        sb ~= format("vector_dim: %d\n", vector_dim);
 
         return sb.array;
     }
@@ -58,6 +60,7 @@ Optional!LibSenseConfig get_config() {
     auto lib_paths = doc.front["library_paths"].array.map!(x => x.str).array;
     auto server_endpoint = doc.front["server_endpoint"].str;
     auto index_path = doc.front["index_path"].str;
+    auto vector_dim = doc.front["vector_dim"].integer;
 
     return some(LibSenseConfig(lib_paths, server_endpoint, index_path));
 }

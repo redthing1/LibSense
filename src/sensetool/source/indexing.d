@@ -148,6 +148,18 @@ class LibraryIndexer {
         log.info(format("faiss stats: %s", faiss_Index_ntotal(sem_index)));
     }
 
+    @property long num_sem_index_entries() {
+        if (sem_index) {
+            return faiss_Index_ntotal(sem_index);
+        }
+        enforce(0, "tried to read property of sem_index that was not loaded");
+        assert(0);
+    }
+
+    @property long num_docs() {
+        return lib_index.documents.length;
+    }
+
     bool has_document(string doc_key) {
         return (doc_key in lib_index.documents) != null;
     }

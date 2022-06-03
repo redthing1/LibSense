@@ -10,13 +10,14 @@ import optional;
 
 import config;
 import global;
+import indexing;
 import util.misc;
 import util.logger;
 
 bool verbose = false;
 
 void main(string[] raw_args) {
-	// dfmt off
+    // dfmt off
 	enum CMD_INFO = "info";
 	enum CMD_BUILD = "build";
     auto args = new Program("sensetool", "v. 0.1").summary("libsense multitool")
@@ -47,12 +48,20 @@ void main(string[] raw_args) {
 }
 
 void cmd_info(ProgramArgs args) {
-	auto config = get_config();
-    if (config == none) {
+    auto maybe_config = get_config();
+    if (maybe_config == none) {
         writefln("libsense config not found. it is expected to be at %s", get_config_file_path());
         return;
     }
-    writefln("libsense config:\n%s", config.front);
+    auto config = maybe_config.front;
+    // writefln("libsense config:\n%s", config.front);
+
+    auto indexer = new LibraryIndexer(config.index_path, config.vector_dim);
+    indexer.load();
+
+    writefln("library stats:");
+    writefln("documents: %s", indexer.num_docs);
+    writefln("vectors: %s", indexer.num_sem_index_entries);
 }
 
 void cmd_build(ProgramArgs args) {

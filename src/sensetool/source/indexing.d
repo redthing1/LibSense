@@ -159,6 +159,16 @@ class LibraryIndexer {
         log.info(format("faiss stats: %s", faiss_Index_ntotal(sem_index)));
     }
 
+    public SearchResult[] search(TEmbedding query_vec, int k = 10) {
+        auto distances = new float[1 * k];
+        auto labels = new idx_t[1 * k];
+        auto res = faiss_Index_search(sem_index, 1, cast(float*) query_vec,
+            k, cast(float*) distances, cast(idx_t*) labels);
+        writefln("search result: %s, %s, %s", res, distances, labels);
+
+        return [];
+    }
+
     @property long num_sem_index_entries() {
         if (sem_index) {
             return faiss_Index_ntotal(sem_index);

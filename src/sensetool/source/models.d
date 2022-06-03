@@ -55,3 +55,6 @@ struct EmbedReq {
 struct EmbedResp {
     TEmbedding[] embeds;
 }
+
+struct SearchResult {
+}

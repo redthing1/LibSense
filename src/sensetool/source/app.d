@@ -11,6 +11,7 @@ import optional;
 import config;
 import global;
 import indexing;
+import searching;
 import util.misc;
 import util.logger;
 
@@ -20,6 +21,7 @@ void main(string[] raw_args) {
     // dfmt off
 	enum CMD_INFO = "info";
 	enum CMD_BUILD = "build";
+	enum CMD_SEARCH = "search";
     auto args = new Program("sensetool", "v. 0.1").summary("libsense multitool")
         .author("no")
         .add(new Flag("v", "verbose", "turns on more verbose output"))
@@ -29,6 +31,9 @@ void main(string[] raw_args) {
                 // .add(new Flag(null, "flag1", "flag 1").full("flag-1"))
                 // .add(new Option(null, "opt1", "option 1").full("opt-1"))
 		)
+        .add(new Command(CMD_SEARCH, "search library")
+            .add(new Argument("query", "query to search for"))
+        )
         .parse(raw_args);
 
     verbose = args.flag("verbose");
@@ -43,16 +48,24 @@ void main(string[] raw_args) {
         .on(CMD_BUILD, (args) {
             cmd_build(args);
         })
+        .on(CMD_SEARCH, (args) {
+            cmd_search(args);
+        })
         ;
      // dfmt on
 }
 
+void error_no_config() {
+    import core.stdc.stdlib : exit;
+
+    writefln("libsense config not found. it is expected to be at %s", get_config_file_path());
+    exit(3);
+}
+
 void cmd_info(ProgramArgs args) {
     auto maybe_config = get_config();
-    if (maybe_config == none) {
-        writefln("libsense config not found. it is expected to be at %s", get_config_file_path());
-        return;
-    }
+    if (maybe_config == none)
+        error_no_config();
     auto config = maybe_config.front;
     // writefln("libsense config:\n%s", config.front);
 
@@ -65,14 +78,26 @@ void cmd_info(ProgramArgs args) {
 }
 
 void cmd_build(ProgramArgs args) {
-    auto config = get_config();
-    if (config == none) {
-        writefln("could not get libsense config. run 'sensetool info' for more information");
-        return;
-    }
+    auto maybe_config = get_config();
+    if (maybe_config == none)
+        error_no_config();
 
     import manager;
 
-    auto mgr = new LibraryManager(config.front);
+    auto mgr = new LibraryManager(maybe_config.front);
     mgr.build_index();
+}
+
+void cmd_search(ProgramArgs args) {
+    auto maybe_config = get_config();
+    if (maybe_config == none)
+        error_no_config();
+    auto config = maybe_config.front;
+
+    auto indexer = new LibraryIndexer(config);
+    indexer.load();
+
+    auto query = args.arg("query");
+    auto searcher = new LibrarySearcher(config, indexer);
+    auto results = searcher.search(query);
 }

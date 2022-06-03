@@ -10,4 +10,5 @@ struct ProcessedDocument {
     string key;
     
     string[] sentences;
+    string[] summaries;
 }

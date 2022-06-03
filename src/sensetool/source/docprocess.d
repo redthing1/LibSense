@@ -4,6 +4,7 @@ import std.stdio;
 import std.format;
 import std.datetime;
 import std.algorithm : fold;
+import std.array;
 
 import optional;
 
@@ -56,14 +57,48 @@ class DocumentProcessor {
 
         auto doc_summary_input_chunks = chunk(document_sents, &summary_chunk_boundary);
 
-        // dump all chunks
-        foreach (chunk; doc_summary_input_chunks) {
-            writefln("chunk total size: %s elements -> %s chars",
-                chunk.length,
-                chunk.fold!((a, b) => a + cast(int) b.length)(0));
+        // // dump all chunks
+        // foreach (chunk; doc_summary_input_chunks) {
+        //     writefln("chunk total size: %s elements -> %s chars",
+        //         chunk.length,
+        //         chunk.fold!((a, b) => a + cast(int) b.length)(0));
+        // }
+
+        struct SummaryReq {
+            string text;
+            int min_length;
+            int max_length;
+            float typical_p;
         }
 
-        auto processed_doc = ProcessedDocument(input_doc.key, document_sents);
+        struct SummaryResp {
+            string text;
+            int text_length;
+        }
+
+        // create summaries for each chunk
+        string[] summaries;
+        foreach (i, chunk; doc_summary_input_chunks) {
+            auto chunk_text = chunk.join(" ");
+            auto summary_req = SummaryReq(
+                chunk_text,
+                0,
+                256,
+                0.9
+            );
+            auto summary_resp = client.post!(SummaryReq, SummaryResp)(
+                backend_url ~ "/gen_bart_summarizer.json", summary_req);
+            if (summary_resp == none) {
+                log.err(format("failed to summarize document: %s", input_doc.key));
+                return no!ProcessedDocument;
+            }
+            auto summary_data = summary_resp.front;
+            log.trace(format("summarized %s chunk #%d: %s -> %s",
+                    input_doc.key, i, chunk_text.length, summary_data.text_length));
+            summaries ~= summary_data.text;
+        }
+
+        auto processed_doc = ProcessedDocument(input_doc.key, document_sents, summaries);
         return some(processed_doc);
     }
 }

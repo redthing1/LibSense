@@ -149,5 +149,9 @@ auto cmd_dump(ProgramArgs args) {
 
     auto key = args.arg("key");
     auto doc = indexer.get_document(key);
-    writefln("%s", doc);
+
+    // crunch the document nicely
+    auto doc_text = doc.sents.join(" ");
+    auto doc_summary = doc.summs.join(" ");
+    writefln("doc key: %s\n\ntext: %s\n\nsumm: %s\n", doc.key, doc_text, doc_summary);
 }

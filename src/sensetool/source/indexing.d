@@ -18,7 +18,17 @@ import models;
 import util.misc;
 
 struct LibraryIndex {
+    struct Document {
+        string key;
+        long vec_id_start_sents;
+        long vec_id_count_sents;
+        long vec_id_start_summ;
+        long vec_id_count_summ;
+    }
 
+    Document[string] documents;
+    // long vec_id_sents_counter = 0;
+    // long vec_id_summ_counter = 0;
 }
 
 class LibraryIndexer {
@@ -93,24 +103,41 @@ class LibraryIndexer {
         // add document to lib_index
         log.info(format("adding to library index: %s", doc.key));
 
+        // Some indexes can also store integer IDs corresponding to each of the vectors (but not IndexFlatL2).
+        // If no IDs are provided, add just uses the vector ordinal as the id, ie. the first vector gets 0, the second 1, etc.
+        // auto xid_count_sent = doc.sentence_embeddings.length;
+        // auto xid_count_summ = doc.summary_embeddings.length;
+        // auto xid_start_sents = ++lib_index.vec_id_sents_counter;
+        // auto xid_start_summ = ++lib_index.vec_id_summ_counter;
+        // lib_index.vec_id_sents_counter += xid_count_sent;
+        // lib_index.vec_id_summ_counter += xid_count_summ;
+
+        auto id_start_sents = -1;
+        auto id_count_sents = 0;
+
         // sentence embeddings
-        import core.stdc.stdlib : malloc;
-        import core.stdc.string : memcpy;
-
-        // auto doc_sent_vecs = cast(float*) malloc(
-        //     vector_dim * float.sizeof * doc.sentence_embeddings.length);
-        // for (auto i = 0; i < doc.sentence_embeddings.length; i++) {
-        //     auto vec = doc.sentence_embeddings[i];
-        //     memcpy(doc_sent_vecs, vec.ptr, vector_dim * float.sizeof);
-        // }
-        // faiss_Index_add(sem_index, doc.sentence_embeddings.length, doc_sent_vecs);
-
-
         foreach (i, vec; doc.sentence_embeddings) {
-            auto vec_ptr = vec.ptr;
-            faiss_Index_add(sem_index, 1, cast(float*) vec);
+            // idx_t[1] xid = [xid_count_sent + i];
+            // faiss_Index_add_with_ids(sem_index, 1, cast(float*) vec, cast(idx_t*) xid);
+            auto id = faiss_Index_add(sem_index, 1, cast(float*) vec);
+            if (i == 0) id_start_sents = id;
+            id_count_sents++;
         }
-        writefln("faiss stats: %s", faiss_Index_ntotal(sem_index));
+
+        auto id_start_summ = -1;
+        auto id_count_summ = 0;
+
+        // summary embeddings
+        foreach (i, vec; doc.summary_embeddings) {
+            auto id = faiss_Index_add(sem_index, 1, cast(float*) vec);
+            if (i == 0) id_start_summ = id;
+            id_count_summ++;
+        }
+
+        auto lib_doc = LibraryIndex.Document(doc.key, id_start_sents, id_count_sents, id_start_summ, id_count_summ);
+        lib_index.documents[doc.key] = lib_doc;
+
+        log.info(format("faiss stats: %s", faiss_Index_ntotal(sem_index)));
     }
 
     ~this() {

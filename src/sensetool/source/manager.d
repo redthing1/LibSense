@@ -21,10 +21,11 @@ class LibraryManager {
     }
 
     public void build_index() {
-        import std.file: dirEntries, SpanMode, isFile;
-        import std.path: expandTilde;
+        import std.file : dirEntries, SpanMode, isFile;
+        import std.path : expandTilde;
 
-        auto indexer = new LibraryIndexer();
+        auto indexer = new LibraryIndexer(config.index_path);
+        indexer.load();
 
         log.info("building library index...");
 
@@ -54,12 +55,23 @@ class LibraryManager {
 
             // we have the raw contents of the document, now we need to process it
             doc.raw_contents = doc_raw_contents.front;
-            auto processed_document = doc_processor.process_document(doc);
+            auto maybe_processed_document = doc_processor.process_document(doc);
+            if (maybe_processed_document == none) {
+                log.err(format("failed to process document: %s", doc));
+                continue;
+            }
+
+            auto processed_document = maybe_processed_document.front;
+            // the document is now fully processed, so we can add it to the index
+            indexer.add_document(processed_document);
         }
+
+        // save the library index
+        indexer.save();
     }
 
     string get_doc_key_from_filename(string doc_filename) {
-        import std.path: baseName, stripExtension;
+        import std.path : baseName, stripExtension;
         import std.string;
         import std.regex;
 

@@ -75,8 +75,9 @@ class DocumentProcessor {
                 return no!ProcessedDocument;
             }
             auto summary_data = summary_resp.front;
-            log.trace(format("summarized %s chunk #%d: %s -> %s",
-                    input_doc.key, i, chunk_text.length, summary_data.text_length));
+            log.trace(format("summarized %s chunk #%d/%d: %s -> %s",
+                    input_doc.key, i + 1, doc_summary_input_chunks.length, chunk_text.length, summary_data
+                    .text_length));
             summaries ~= summary_data.text;
         }
 
@@ -95,7 +96,7 @@ class DocumentProcessor {
                     return false;
                 }
                 auto embed_data = maybe_embed_data.front;
-                log.trace(format("embedded %s chunk #%d", input_doc.key, i));
+                log.trace(format("embedded %s chunk #%d/%d", input_doc.key, i + 1, chunks.length));
                 embeds ~= embed_data;
             }
             return true;

@@ -25,6 +25,9 @@ struct LibraryIndex {
         long vec_id_count_sents;
         long vec_id_start_summ;
         long vec_id_count_summ;
+
+        string[] sents;
+        string[] summs;
     }
 
     Document[string] documents;
@@ -145,7 +148,10 @@ class LibraryIndexer {
             id_count_summ++;
         }
 
-        auto lib_doc = LibraryIndex.Document(doc.key, id_start_sents, id_count_sents, id_start_summ, id_count_summ);
+        auto lib_doc = LibraryIndex.Document(
+            doc.key,
+            id_start_sents, id_count_sents, id_start_summ, id_count_summ,
+            doc.sentences, doc.summaries);
         lib_index.documents[doc.key] = lib_doc;
 
         log.info(format("faiss stats: %s", faiss_Index_ntotal(sem_index)));

@@ -183,6 +183,7 @@ class LibraryIndexer {
         // now go through the labels and find the corresponding documents
         auto results = appender!(SearchResult[]);
         foreach (i, label; labels) {
+            log.trace(format("checking label #%d/%d: %s", i, labels.length, label));
             // find what document has this vector id
             foreach (doc; lib_index.documents.byValue()) {
                 // check document sentence embeddings
@@ -194,6 +195,7 @@ class LibraryIndexer {
                         doc.key, doc.sents[sent_id], SearchResult.Type.Sentence,
                         distances[i], label
                     );
+                    log.trace(format("found sentence: %s", doc.sents[sent_id]));
                     break;
                 }
                 // check document summary embeddings
@@ -205,6 +207,7 @@ class LibraryIndexer {
                         doc.key, doc.summs[summ_id], SearchResult.Type.Summary,
                         distances[i], label
                     );
+                    log.trace(format("found summary: %s", doc.summs[summ_id]));
                     break;
                 }
             }

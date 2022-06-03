@@ -37,7 +37,7 @@ class DocumentProcessor {
             return no!ProcessedDocument;
         }
         auto clean_data = clean_resp.front;
-        log.info(format("cleaned document: %s: %d -> %d",
+        log.info(format("cleaned document: %s: %d s -> %d s",
                 input_doc.key, clean_data.num_initial_sents, clean_data.num_sents));
 
         auto document_sents = clean_data.sents;
@@ -75,7 +75,7 @@ class DocumentProcessor {
                 return no!ProcessedDocument;
             }
             auto summary_data = summary_resp.front;
-            log.trace(format("summarized %s chunk #%d/%d: %s -> %s",
+            log.trace(format("summarized %s chunk #%d/%d: %s c -> %s c",
                     input_doc.key, i + 1, doc_summary_input_chunks.length, chunk_text.length, summary_data
                     .text_length));
             summaries ~= summary_data.text;

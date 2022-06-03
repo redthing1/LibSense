@@ -26,17 +26,6 @@ class DocumentProcessor {
         client.timeout = 600.seconds;
 
         // clean the document
-        struct CleanReq {
-            string contents;
-            int max_sentence_length;
-            bool discard_nonpara;
-        }
-
-        struct CleanResp {
-            string[] sents;
-            int num_sents;
-            int num_initial_sents;
-        }
 
         log.info(format("cleaning document: %s", input_doc.key));
         auto clean_resp = client.post!(CleanReq, CleanResp)(backend_url ~ "/clean_document.json",
@@ -48,7 +37,7 @@ class DocumentProcessor {
         }
         auto clean_data = clean_resp.front;
         log.info(format("cleaned document: %s: %d -> %d",
-            input_doc.key, clean_data.num_initial_sents, clean_data.num_sents));
+                input_doc.key, clean_data.num_initial_sents, clean_data.num_sents));
 
         auto document_sents = clean_data.sents;
 
@@ -67,18 +56,6 @@ class DocumentProcessor {
         //         chunk.length,
         //         chunk.fold!((a, b) => a + cast(int) b.length)(0));
         // }
-
-        struct SummaryReq {
-            string text;
-            int min_length;
-            int max_length;
-            float typical_p;
-        }
-
-        struct SummaryResp {
-            string text;
-            int text_length;
-        }
 
         // create summaries for each chunk
         string[] summaries;
@@ -103,13 +80,6 @@ class DocumentProcessor {
         }
 
         // create embeddings for every sentence and every summary
-        struct EmbedReq {
-            string[] texts;
-        }
-
-        struct EmbedResp {
-            TEmbedding[] embeds;
-        }
 
         enum EMBED_BATCH_SIZE = 64;
         auto sent_embed_chunks = document_sents.chunk!string(x => x.length >= EMBED_BATCH_SIZE);

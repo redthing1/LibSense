@@ -3,12 +3,14 @@ module docprocess;
 import std.stdio;
 import std.format;
 import std.datetime;
+import std.algorithm : fold;
 
 import optional;
 
 import global;
 import models;
 import util.minhttp;
+import util.chunker;
 
 class DocumentProcessor {
     string backend_url;
@@ -43,7 +45,25 @@ class DocumentProcessor {
         }
         auto clean_data = clean_resp.front;
 
-        auto processed_doc = ProcessedDocument(input_doc.key, clean_data.sents);
+        auto document_sents = clean_data.sents;
+
+        // create summaries for the document
+        // to do this, we want to chunk the document into summary input sizes
+        enum SUMMARY_INPUT_SIZE = 1600;
+        bool summary_chunk_boundary(string[] chunk) {
+            return chunk.fold!((a, b) => a + cast(int) b.length)(0) > SUMMARY_INPUT_SIZE;
+        }
+
+        auto doc_summary_input_chunks = chunk(document_sents, &summary_chunk_boundary);
+
+        // dump all chunks
+        foreach (chunk; doc_summary_input_chunks) {
+            writefln("chunk total size: %s elements -> %s chars",
+                chunk.length,
+                chunk.fold!((a, b) => a + cast(int) b.length)(0));
+        }
+
+        auto processed_doc = ProcessedDocument(input_doc.key, document_sents);
         return some(processed_doc);
     }
 }

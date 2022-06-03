@@ -92,8 +92,10 @@ class LibraryIndexer {
             // load the vector data
             faiss_read_index_fname(sem_vector_path.c_str(), 0, &sem_index);
         }
+        auto sem_index_trained = faiss_Index_is_trained(sem_index);
         log.trace(format("prepared faiss index for semantic vectors, dim: %s trained: %s",
-                vector_dim, faiss_Index_is_trained(sem_index)));
+                vector_dim, sem_index_trained));
+        assert(sem_index_trained, "semantic vectors index is not trained");
     }
 
     public void save() {

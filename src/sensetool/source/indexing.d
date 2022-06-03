@@ -4,6 +4,7 @@ import std.stdio;
 import std.file;
 import std.format;
 import std.path;
+import std.array;
 import mir.ser.msgpack : serializeMsgpack;
 import mir.deser.msgpack : deserializeMsgpack;
 import std.exception : enforce;
@@ -22,7 +23,7 @@ struct LibraryIndex {
     struct Document {
         /// document key
         string key;
-        
+
         long vec_id_sents_start;
         long vec_id_sents_count;
         long vec_id_summ_start;
@@ -180,7 +181,7 @@ class LibraryIndexer {
         // writefln("search result: %s, %s, %s", res, distances, labels);
 
         // now go through the labels and find the corresponding documents
-        auto results = new SearchResult[k];
+        auto results = appender!(SearchResult[]);
         foreach (i, label; labels) {
             // find what document has this vector id
             foreach (doc; lib_index.documents.byValue()) {
@@ -189,7 +190,7 @@ class LibraryIndexer {
                     && label < doc.vec_id_sents_start + doc.vec_id_sents_count) {
                     // found the document
                     auto sent_id = label - doc.vec_id_sents_start;
-                    results[i] = SearchResult(
+                    results ~= SearchResult(
                         doc.key, doc.sents[sent_id], SearchResult.Type.Sentence,
                         distances[i], label
                     );
@@ -200,7 +201,7 @@ class LibraryIndexer {
                     && label < doc.vec_id_summ_start + doc.vec_id_summ_count) {
                     // found the document
                     auto summ_id = label - doc.vec_id_summ_start;
-                    results[i] = SearchResult(
+                    results ~= SearchResult(
                         doc.key, doc.summs[summ_id], SearchResult.Type.Summary,
                         distances[i], label
                     );
@@ -209,7 +210,7 @@ class LibraryIndexer {
             }
         }
 
-        return results;
+        return results.data;
     }
 
     @property long num_sem_index_entries() {

@@ -70,4 +70,21 @@ struct SearchResult {
         Sentence,
         Summary,
     }
+
+    @property string type_label() const {
+        // dfmt off
+        switch (match_type) {
+            case Type.Unknown: return "unk";
+            case Type.Sentence: return "sent";
+            case Type.Summary: return "sum";
+            default: assert(0);
+        }
+        // dfmt on
+    }
+
+    string toString() const {
+        import std.format;
+
+        return format("(%.3f) [%s] %s: %s", vec_distance, type_label, document_key, match_text);
+    }
 }

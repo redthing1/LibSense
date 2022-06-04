@@ -83,7 +83,7 @@ class DocumentProcessor {
 
         // create embeddings for every sentence and every summary
 
-        enum EMBED_BATCH_SIZE = 64;
+        enum EMBED_BATCH_SIZE = 32;
         auto sent_embed_chunks = document_sents.chunk!string(x => x.length >= EMBED_BATCH_SIZE);
         auto summary_embed_chunks = summaries.chunk!string(x => x.length >= EMBED_BATCH_SIZE);
         auto embedder = SentenceEmbed(backend_url);

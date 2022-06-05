@@ -33,6 +33,7 @@ void main(string[] raw_args) {
         .add(new Command(CMD_BUILD, "build library index")
                 // .add(new Flag(null, "flag1", "flag 1").full("flag-1"))
                 // .add(new Option(null, "opt1", "option 1").full("opt-1"))
+                .add(new Flag(null, "save_often", "save index often").full("save-often"))
 		)
         .add(new Command(CMD_SEARCH, "search library")
             .add(new Argument("query", "query to search for"))
@@ -101,7 +102,8 @@ void cmd_build(ProgramArgs args) {
     import manager;
 
     auto mgr = new LibraryManager(maybe_config.front);
-    mgr.build_index();
+    auto should_save_often = args.flag("save_often");
+    mgr.build_index(should_save_often);
 }
 
 void cmd_search(ProgramArgs args) {

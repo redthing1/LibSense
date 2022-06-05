@@ -20,7 +20,7 @@ class LibraryManager {
         this.config = config;
     }
 
-    public void build_index() {
+    public void build_index(bool save_often = false) {
         import std.file : dirEntries, SpanMode, isFile;
         import std.path : expandTilde;
 
@@ -70,6 +70,11 @@ class LibraryManager {
             auto processed_document = maybe_processed_document.front;
             // the document is now fully processed, so we can add it to the index
             indexer.add_document(processed_document);
+
+            if (save_often) {
+                log.trace(format("saving index (save often enabled)..."));
+                indexer.save();
+            }
         }
 
         // save the library index

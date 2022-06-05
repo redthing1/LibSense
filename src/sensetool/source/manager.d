@@ -57,6 +57,7 @@ class LibraryManager {
             auto doc_raw_contents = doc_reader.read_document(doc.file_name);
             if (doc_raw_contents == none) {
                 log.err(format("failed to read document: %s", doc));
+                continue;
             }
 
             // we have the raw contents of the document, now we need to process it

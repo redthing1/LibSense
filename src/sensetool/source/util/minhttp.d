@@ -23,6 +23,7 @@ private Optional!TResp decode_response(TResp)(Response resp) {
 
 class MinHttpClient {
     public Duration timeout = 60.seconds;
+    public string[string] headers;
 
     this() {
     }
@@ -30,6 +31,7 @@ class MinHttpClient {
     private Request create_request() {
         auto req = Request();
         req.timeout = timeout;
+        req.addHeaders(headers);
         return req;
     }
 

@@ -13,3 +13,4 @@ sensetool-test-*
 *.o
 *.obj
 *.lst
+*.a
